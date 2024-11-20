@@ -5,7 +5,7 @@ const emailFrom = process.env.EMAIL_FROM;
 const { v4: uuidv4 } = require("uuid");
 
 
-exports.handler = async (event, context) => {
+exports.handler = async (event, context, callback) => {
     const connection = await mysql.createConnection({
         host: process.env.RDS_HOST,
         port: process.env.RDS_PORT,
