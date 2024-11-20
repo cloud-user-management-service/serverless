@@ -1,9 +1,9 @@
 name: Deploy Lambda Function
 
 on:
-    pull_request:
-      branches:
-        - main  
+  pull_request:
+    branches:
+      - main  
 
 jobs:
   deploy:
