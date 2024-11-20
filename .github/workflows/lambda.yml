@@ -33,4 +33,4 @@ jobs:
 
     - name: Upload ZIP to S3
       run: |
-        aws s3 cp lambda.zip s3://${{ secrets.S3_BUCKET_NAME }}/lambda.zip
+        aws s3 cp lambda.zip s3://lambda_code_bucket/lambda.zip
