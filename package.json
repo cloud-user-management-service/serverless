@@ -1,0 +1,17 @@
+{
+  "name": "serverless",
+  "version": "1.0.0",
+  "description": "",
+  "main": "verifyEmail.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "keywords": [],
+  "dependencies": {
+    "@sendgrid/mail": "^8.1.4",
+    "aws-sdk": "^2.1692.0",
+    "uuid": "^11.0.3"
+  }
+}

@@ -1,0 +1,36 @@
+name: Deploy Lambda Function
+
+on:
+    pull_request:
+      branches:
+        - main  
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+    
+    - name: Set up Node.js
+      uses: actions/setup-node@v2
+      with:
+        node-version: '14'  
+    
+    - name: Install dependencies
+      run: npm install  
+    
+    
+    - name: Create deployment package
+      run: zip -r lambda.zip .   
+
+    - name: Deploy to AWS Lambda
+      uses: aws-actions/aws-lambda-deploy@v1
+      with:
+        function-name: lambda  
+        zip-file: lambda.zip  
+        region: us-west-2  
+      env:
+        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID_DEMO }}  
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY_DEMO }}
