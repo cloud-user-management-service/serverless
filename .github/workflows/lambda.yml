@@ -31,8 +31,6 @@ jobs:
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY_DEMO }}
         aws-region: us-west-2
 
-    - name: Deploy to AWS Lambda
+    - name: Upload ZIP to S3
       run: |
-        aws lambda update-function-code \
-          --function-name lambda \
-          --zip-file fileb://lambda.zip
+        aws s3 cp lambda.zip s3://${{ secrets.S3_BUCKET_NAME }}/lambda.zip
