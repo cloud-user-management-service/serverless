@@ -47,7 +47,7 @@ exports.handler = async (event, context, callback) => {
             from: emailFrom,
             subject: 'Email Verification',
             text: `Please verify your email using the following link: ${verificationLink}`,
-            html: `<p>Please verify your email using the following link:</p><a href="${verificationLink}">${verificationLink}</a>`,
+            html: `<p>Please verify your email using the following link:</p><a href="${verificationLink}">verify link here</a>`,
         };
 
         console.log('msg:', msg);
