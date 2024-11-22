@@ -1,11 +1,15 @@
 const sgMail = require('@sendgrid/mail');
 const mysql = require("mysql2/promise");
 sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+sgMail.setTimeout(300000);
 const emailFrom = process.env.EMAIL_FROM;
 const { v4: uuidv4 } = require("uuid");
 
 
 exports.handler = async (event, context, callback) => {
+
+    context.callbackWaitsForEmptyEventLoop = false;
+    console.log('event1:', event);
     const connection = await mysql.createConnection({
         host: process.env.RDS_HOST,
         port: process.env.RDS_PORT,
@@ -15,6 +19,7 @@ exports.handler = async (event, context, callback) => {
       });
 
     try {
+        console.log('host:', process.env.RDS_HOST);
         console.log('event:', event);
         console.log('context:', context);
 
@@ -24,15 +29,18 @@ exports.handler = async (event, context, callback) => {
 
         const token = uuidv4();
         const expiresTime = new Date(Date.now() + 2 * 60 * 1000);
+        const id = uuidv4();
 
         // save token to database
         await connection.execute(
-            `INSERT INTO EmailVerification (user_id, email, token, expires_time) VALUES (?, ?, ?, ?)`,
-            [userId, email, token, expiresTime]
+            `INSERT INTO EmailVerification (id, email, token, expireTime, user_id) VALUES (?, ?, ?, ?, ?)`,
+            [id, email, token, expiresTime, userId]
         );
 
         // send email to user for verification
         const verificationLink = `${process.env.BASE_URL}/v1/user/verify?email=${email}&token=${token}`;
+
+        console.log('verificationLink:', verificationLink);
 
         const msg = {
             to: email,
@@ -42,8 +50,11 @@ exports.handler = async (event, context, callback) => {
             html: `<p>Please verify your email using the following link:</p><a href="${verificationLink}">${verificationLink}</a>`,
         };
 
+        console.log('msg:', msg);
+
         // send email
-        await sgMail.send(msg);
+        const ret = await sgMail.send(msg);
+        console.log('ret:', ret);
         console.log(`Verification email sent to ${email}`);
 
         return {
@@ -51,16 +62,17 @@ exports.handler = async (event, context, callback) => {
             body: JSON.stringify({ message: 'Email sent successfully!' }),
         };
     } catch (error) {
-        console.error('Error sending email:', error);
+        console.log('Error sending email:', error);
 
         if (error.response) {
-            console.error('Error response:', error.response.body);
+            console.log('Error response:', error.response.body);
         }
         return {
             statusCode: 500,
             body: JSON.stringify({ message: 'Failed to send email.' }),
         };
     } finally {
+        console.log('Closing connection');
         connection.end();
     }
 };
