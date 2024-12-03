@@ -1,12 +1,34 @@
+const AWS = require('aws-sdk');
 const sgMail = require('@sendgrid/mail');
 const mysql = require("mysql2/promise");
-sgMail.setApiKey(process.env.SENDGRID_API_KEY);
-sgMail.setTimeout(300000);
-const emailFrom = process.env.EMAIL_FROM;
 const { v4: uuidv4 } = require("uuid");
+
+const dbSecretName = process.env.DB_SECRET_NAME;
+const emailSecretName = process.env.EMAIL_SECRET_NAME;
+const secretsManager = new AWS.SecretsManager();
+
+
+const emailFrom = process.env.EMAIL_FROM;
 
 
 exports.handler = async (event, context, callback) => {
+
+    // Get email credentials from Secrets Manager
+    const emailSecretResponse = await secretsManager
+    .getSecretValue({ SecretId: emailSecretName })
+    .promise();
+    const emailSecret = JSON.parse(emailSecretResponse.SecretString);           
+    sgMail.setApiKey(emailSecret.password);
+    sgMail.setTimeout(300000);
+
+    console.log(`Retrieved email credentials: password = ${emailSecret.password}`);
+
+    // Get database credentials from Secrets Manager
+    const passwordSecretResponse = await secretsManager
+    .getSecretValue({ SecretId: dbSecretName })
+    .promise();
+    const dbSecret = JSON.parse(passwordSecretResponse.SecretString);
+    console.log(`Retrieved database credentials: password = ${dbSecret.password}`);
 
     context.callbackWaitsForEmptyEventLoop = false;
     console.log('event1:', event);
@@ -14,7 +36,7 @@ exports.handler = async (event, context, callback) => {
         host: process.env.RDS_HOST,
         port: process.env.RDS_PORT,
         user: process.env.RDS_USER,
-        password: process.env.RDS_PASSWORD,
+        password: dbSecret.password,
         database: process.env.RDS_NAME,
       });
 
